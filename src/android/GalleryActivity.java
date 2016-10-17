@@ -1,5 +1,3 @@
-package com.tuxpan.foregroundcameragalleryplugin;
-
 /*
  Copyright 2013 Bruno Carreira - Lucas Farias - Rafael Luna - Vin?cius Fonseca.
  Ported to PhoneGap 2.7 by Mahenda Liya
@@ -16,7 +14,8 @@ package com.tuxpan.foregroundcameragalleryplugin;
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-
+package org.apache.cordova.camera;
+ 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -242,8 +241,8 @@ public class GalleryActivity extends Activity implements OnItemClickListener {
 		protected void onPostExecute(Integer result) {
 			if ((result != null) && (result == -1)) {
 				AlertDialog.Builder dialog = new AlertDialog.Builder(sdcardImages.getContext());
-				dialog.setTitle("Alerta");
-				dialog.setMessage("No se encontrarón imagenes!");
+				dialog.setTitle("Alert");
+				dialog.setMessage("No images were found!");
 				dialog.setNeutralButton("OK", new OnClickListener() {
 
 					public void onClick(DialogInterface dialog, int which) {
