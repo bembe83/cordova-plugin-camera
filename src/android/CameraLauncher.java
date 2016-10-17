@@ -278,7 +278,10 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         this.numPics = queryImgDB(whichContentStore()).getCount();
 
         // Let's use the intent and see what happens
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        //Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+		
+		//Replaced Native camera with custom one to prevent the main activity to be restarted
+		Intent intent = new Intent(this.cordova.getActivity().getApplicationContext(), CameraActivity.class);
 
         // Specify file so that large image is captured and returned
         File photo = createCaptureFile(encodingType);
