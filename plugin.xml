@@ -77,11 +77,11 @@
 				android:screenOrientation="portrait" 
 				android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
             </activity>
-			
+		
 			<activity 
 				android:label="galleryactivity" 
 				android:name="org.apache.cordova.camera.GalleryActivity" 
-				android:screenOrientation="portrait" 
+				android:screenOrientation="portrait">
             </activity>
 			
         </config-file>
