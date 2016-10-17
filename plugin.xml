@@ -72,16 +72,27 @@
 		
 		<config-file target="AndroidManifest.xml" parent="/manifest/application">
             <activity 
-			android:label="cameraactivity" 
-			android:name="org.apache.cordova.camera.CameraActivity" 
-			android:screenOrientation="portrait" 
-			android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+				android:label="cameraactivity" 
+				android:name="org.apache.cordova.camera.CameraActivity" 
+				android:screenOrientation="portrait" 
+				android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
             </activity>
+			
+			<activity 
+				android:label="galleryactivity" 
+				android:name="org.apache.cordova.camera.GalleryActivity" 
+				android:screenOrientation="portrait" 
+            </activity>
+			
         </config-file>
 
 		<!--Added-->
 		<source-file src="src/android/CameraActivity.java" target-dir="src/org/apache/cordova/camera" />
+		<source-file src="src/android/GalleryActivity.java" target-dir="src/org/apache/cordova/camera" />
+		
 		<source-file src="src/android/nativecameraplugin.xml" target-dir="res/layout" />
+		<source-file src="src/android/gallery.xml" target-dir="res/layout" />
+		
         <source-file src="res/btn_shot.png" target-dir="res/drawable" />
         <source-file src="res/btn_flip.png" target-dir="res/drawable" />
         <source-file src="res/btn_flash_on.png" target-dir="res/drawable" />

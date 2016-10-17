@@ -350,7 +350,9 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
     // TODO: Images selected from SDCARD don't display correctly, but from CAMERA ALBUM do!
     // TODO: Images from kitkat filechooser not going into crop function
     public void getImage(int srcType, int returnType, int encodingType) {
-        Intent intent = new Intent();
+        Intent intent = new Intent(this.cordova.getActivity().getApplicationContext() , GalleryActivity.class);
+		/*
+		Intent intent = new Intent();
         String title = GET_PICTURE;
         croppedUri = null;
         if (this.mediaType == PICTURE) {
@@ -388,6 +390,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             intent.setAction(Intent.ACTION_GET_CONTENT);
             intent.addCategory(Intent.CATEGORY_OPENABLE);
         }
+		*/
         if (this.cordova != null) {
             this.cordova.startActivityForResult((CordovaPlugin) this, Intent.createChooser(intent,
                     new String(title)), (srcType + 1) * 16 + returnType + 1);
