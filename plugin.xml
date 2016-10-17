@@ -70,10 +70,6 @@
             <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
         </config-file>
 
-        <source-file src="src/android/CameraLauncher.java" target-dir="src/org/apache/cordova/camera" />
-        <source-file src="src/android/FileHelper.java" target-dir="src/org/apache/cordova/camera" />
-        <source-file src="src/android/ExifHelper.java" target-dir="src/org/apache/cordova/camera" />
-
 		<!--Added-->
 		<source-file src="src/android/CameraActivity.java" target-dir="src/org/apache/cordova/camera" />
 		<source-file src="src/android/nativecameraplugin.xml" target-dir="res/layout" />
@@ -85,6 +81,10 @@
         <source-file src="res/viewfinder.png" target-dir="res/drawable" />
 		<!-- -->
 		
+        <source-file src="src/android/CameraLauncher.java" target-dir="src/org/apache/cordova/camera" />
+        <source-file src="src/android/FileHelper.java" target-dir="src/org/apache/cordova/camera" />
+        <source-file src="src/android/ExifHelper.java" target-dir="src/org/apache/cordova/camera" />
+
         <js-module src="www/CameraPopoverHandle.js" name="CameraPopoverHandle">
             <clobbers target="CameraPopoverHandle" />
         </js-module>
