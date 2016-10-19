@@ -95,6 +95,7 @@
 		
         <source-file src="res/btn_shot.png" target-dir="res/drawable" />
 		<source-file src="res/btn_shot_blue.png" target-dir="res/drawable" />
+		<source-file src="res/btn_close.png" target-dir="res/drawable" />
         <source-file src="res/btn_flip.png" target-dir="res/drawable" />
         <source-file src="res/btn_flash_on.png" target-dir="res/drawable" />
         <source-file src="res/btn_flash_no.png" target-dir="res/drawable" />

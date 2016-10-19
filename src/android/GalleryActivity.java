@@ -73,7 +73,7 @@ public class GalleryActivity extends Activity implements OnItemClickListener {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		imageSource = new LinkedHashMap<>();
+		imageSource = new LinkedHashMap<String, String>();
 
         if(System.getenv("SECONDARY_STORAGE")!= null) {
             imageSource.put(EXTERNAL, System.getenv("SECONDARY_STORAGE"));
@@ -97,7 +97,7 @@ public class GalleryActivity extends Activity implements OnItemClickListener {
 
 	private void initializeSpinner() {
 		Spinner spinner = (Spinner)findViewById(R.id.spinnerSource);
-		ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item);
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item);
         adapter.addAll(imageSource.keySet());
 		spinner.setAdapter(adapter);
 		spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -215,7 +215,7 @@ public class GalleryActivity extends Activity implements OnItemClickListener {
 		protected Integer doInBackground(Object... params) {
 			Bitmap bitmap = null;
 			Bitmap newBitmap = null;
-			sequencialImageID = new LinkedHashMap<>();
+			sequencialImageID = new LinkedHashMap<Integer, String>();
 
 			if(img_source == null)
 				img_source = imageSource.get(EXTERNAL);
@@ -316,7 +316,7 @@ public class GalleryActivity extends Activity implements OnItemClickListener {
 	class ImageAdapter extends BaseAdapter {
 
 		private Context mContext;
-		private ArrayList<LoadedImage> photos = new ArrayList<>();
+		private ArrayList<LoadedImage> photos = new ArrayList<LoadedImage>();
 
 		public ImageAdapter(Context context) {
 			mContext = context;
@@ -385,8 +385,8 @@ public class GalleryActivity extends Activity implements OnItemClickListener {
         //Uri uri = Uri.parse(MediaStore.Images.Media.EXTERNAL_CONTENT_URI + "/"
         //        + imageID);
 
-        Integer imageID = (new ArrayList<>(sequencialImageID.keySet())).get(position);
-        String  imgPath = (new ArrayList<>(sequencialImageID.values())).get(position);
+        Integer imageID = (new ArrayList<Integer>(sequencialImageID.keySet())).get(position);
+        String  imgPath = (new ArrayList<String> (sequencialImageID.values())).get(position);
 
         Uri uri = Uri.parse(imgPath);
 
