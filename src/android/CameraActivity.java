@@ -14,7 +14,7 @@
    		limitations under the License.   			
  */
 
-package com.camgallerytest;
+package org.apache.cordova.camera;
 
 import android.app.Activity;
 import android.content.pm.PackageManager;

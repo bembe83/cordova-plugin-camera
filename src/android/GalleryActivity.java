@@ -14,7 +14,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-package com.camgallerytest;
+package org.apache.cordova.camera;
 
 import android.app.Activity;
 import android.app.AlertDialog;
