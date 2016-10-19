@@ -96,7 +96,7 @@ public class GalleryActivity extends Activity implements OnItemClickListener {
 	}
 
 	private void initializeSpinner() {
-		Spinner spinner = (Spinner)findViewById(R.id.spinnerSource);
+		Spinner spinner = (Spinner)findViewById(getApplication().getResources().getIdentifier("spinnerSource", "id", getPackageName()));
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item);
         adapter.addAll(imageSource.keySet());
 		spinner.setAdapter(adapter);
