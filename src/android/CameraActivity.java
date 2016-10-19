@@ -14,7 +14,7 @@
    		limitations under the License.   			
  */
 
-package org.apache.cordova.camera;
+package com.camgallerytest;
 
 import android.app.Activity;
 import android.content.pm.PackageManager;
@@ -212,15 +212,15 @@ public class CameraActivity extends Activity implements SensorEventListener {
                 public void onClick(View v) {
                     Parameters p = camera.getParameters();
                     if (led == 0) {
-                        p.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
+                        p.setFlashMode(Parameters.FLASH_MODE_AUTO);
                         flashButton.setBackgroundResource(imgFlashAuto);
                         led = 1;
                     } else if (led == 1) {
-                        p.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+                        p.setFlashMode(Parameters.FLASH_MODE_TORCH);
                         flashButton.setBackgroundResource(imgFlashOn);
                         led = 2;
                     } else if (led == 2) {
-                        p.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+                        p.setFlashMode(Parameters.FLASH_MODE_OFF);
                         flashButton.setBackgroundResource(imgFlashNo);
                         led = 0;
                     }
@@ -306,16 +306,24 @@ public class CameraActivity extends Activity implements SensorEventListener {
             Uri fileUri = (Uri) getIntent().getExtras().get(
                     MediaStore.EXTRA_OUTPUT);
             File pictureFile = new File(fileUri.getPath());
+
             try {
+                if(!pictureFile.exists())
+                    pictureFile.createNewFile();
+
                 FileOutputStream fos = new FileOutputStream(pictureFile);
                 fos.write(data);
+                fos.flush();
                 fos.close();
+                Log.d(TAG, "Image saved to "+ fileUri.toString());
             } catch (FileNotFoundException e) {
                 Log.d(TAG, "File not found: " + e.getMessage());
             } catch (IOException e) {
                 Log.d(TAG, "Error accessing file: " + e.getMessage());
             }
-            setResult(RESULT_OK);
+
+            getIntent().setData(fileUri);
+            setResult(RESULT_OK, getIntent());
             pressed = false;
             finish();
         }
@@ -364,7 +372,7 @@ public class CameraActivity extends Activity implements SensorEventListener {
     }
 
     private Camera.Size getBestPreviewSize(int height,
-                                           Camera.Parameters parameters) {
+                                           Parameters parameters) {
 
         final double ASPECT_TOLERANCE = 0.1;
         Camera.Size optimalSize = null;
@@ -397,12 +405,11 @@ public class CameraActivity extends Activity implements SensorEventListener {
                 camera.setPreviewDisplay(previewHolder);
             }
             catch (Throwable t) {
-                Log.e("PreviewDemo-surfaceCallback",
-                        "Exception in setPreviewDisplay()", t);
+                Log.e(TAG, "Exception in setPreviewDisplay()", t);
             }
 
             if (!cameraConfigured) {
-                Camera.Parameters parameters = camera.getParameters();
+                Parameters parameters = camera.getParameters();
                 Camera.Size size = getBestPreviewSize(height, parameters);
                 Camera.Size pictureSize = getSmallestPictureSize(parameters);
                 if (size != null && pictureSize != null) {
@@ -412,20 +419,20 @@ public class CameraActivity extends Activity implements SensorEventListener {
                     parameters.setPictureFormat(ImageFormat.JPEG);
                     // For Android 2.3.4 quirk
                     if (parameters.getSupportedFocusModes() != null) {
-                        if (parameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
-                            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
-                        } else if (parameters.getSupportedFocusModes().contains(android.hardware.Camera.Parameters.FOCUS_MODE_AUTO)) {
-                            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+                        if (parameters.getSupportedFocusModes().contains(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
+                            parameters.setFocusMode(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+                        } else if (parameters.getSupportedFocusModes().contains(Parameters.FOCUS_MODE_AUTO)) {
+                            parameters.setFocusMode(Parameters.FOCUS_MODE_AUTO);
                         }
                     }
                     if (parameters.getSupportedSceneModes() != null) {
-                        if (parameters.getSupportedSceneModes().contains(Camera.Parameters.SCENE_MODE_AUTO)) {
-                            parameters.setSceneMode(Camera.Parameters.SCENE_MODE_AUTO);
+                        if (parameters.getSupportedSceneModes().contains(Parameters.SCENE_MODE_AUTO)) {
+                            parameters.setSceneMode(Parameters.SCENE_MODE_AUTO);
                         }
                     }
                     if (parameters.getSupportedWhiteBalance() != null) {
-                        if (parameters.getSupportedWhiteBalance().contains(Camera.Parameters.WHITE_BALANCE_AUTO)) {
-                            parameters.setWhiteBalance(Camera.Parameters.WHITE_BALANCE_AUTO);
+                        if (parameters.getSupportedWhiteBalance().contains(Parameters.WHITE_BALANCE_AUTO)) {
+                            parameters.setWhiteBalance(Parameters.WHITE_BALANCE_AUTO);
                         }
                     }
                     cameraConfigured=true;
@@ -435,7 +442,7 @@ public class CameraActivity extends Activity implements SensorEventListener {
         }
     }
 
-    private Camera.Size getSmallestPictureSize(Camera.Parameters parameters) {
+    private Camera.Size getSmallestPictureSize(Parameters parameters) {
         Camera.Size result=null;
         for (Camera.Size size : parameters.getSupportedPictureSizes()) {
             if (result == null) {

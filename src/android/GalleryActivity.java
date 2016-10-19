@@ -14,17 +14,11 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-package org.apache.cordova.camera;
- 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+package com.camgallerytest;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -32,6 +26,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,9 +34,14 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.Spinner;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
 /**
  * Class to search images from the memory card. Based on
@@ -50,21 +50,39 @@ import android.widget.ImageView;
  */
 public class GalleryActivity extends Activity implements OnItemClickListener {
 
+	public static String INTERNAL = "Internal Memory";
+	public static String EXTERNAL = "SD Card";
+
 	private GridView sdcardImages;
 	private ImageAdapter imageAdapter;
-	private LoadImagesFromSDCard load;
-	private Map<Integer, Integer> sequencialImageID;
+	private LoadImagesFromSource load;
+	private LinkedHashMap<Integer, String> sequencialImageID;
+
+	//Bembe
+	public static LinkedHashMap<String, String> imageSource;
+	public static String img_source;
 
 	/**
 	 * Creates the content view, sets up the grid, the adapter, and the click
 	 * listener.
 	 * 
 	 * @param savedInstanceState
-	 * @see android.app.Activity#onCreate(android.os.Bundle)
+	 * @see Activity#onCreate(Bundle)
 	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		imageSource = new LinkedHashMap<>();
+
+        if(System.getenv("SECONDARY_STORAGE")!= null) {
+            imageSource.put(EXTERNAL, System.getenv("SECONDARY_STORAGE"));
+            imageSource.put(INTERNAL,Environment.getExternalStorageDirectory().getAbsolutePath());
+        }else
+		    imageSource.put(EXTERNAL, Environment.getExternalStorageDirectory().getAbsolutePath());
+
+		img_source = imageSource.get(EXTERNAL);
+
 		// Request progress bar
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(getApplication().getResources().getIdentifier("gallery", "layout", getPackageName()));
@@ -73,7 +91,31 @@ public class GalleryActivity extends Activity implements OnItemClickListener {
 
 		setupViews();
 		setProgressBarIndeterminateVisibility(true);
-		loadImages();
+		initializeSpinner();
+		//loadImages();
+	}
+
+	private void initializeSpinner() {
+		Spinner spinner = (Spinner)findViewById(R.id.spinnerSource);
+		ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item);
+        adapter.addAll(imageSource.keySet());
+		spinner.setAdapter(adapter);
+		spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
+				img_source = imageSource.get(adapterView.getItemAtPosition(position).toString());
+				if(load!= null) {
+                    load.cancel(true);
+                }
+                imageAdapter.clean();
+				loadImages();
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> adapterView) {
+
+			}
+		});
 	}
 
 	/**
@@ -110,15 +152,15 @@ public class GalleryActivity extends Activity implements OnItemClickListener {
 	/**
 	 * Load images.
 	 */
-	private void loadImages() {
+	private void loadImages(){
 		final Object data = getLastNonConfigurationInstance();
 		if (data == null) {
-			load = new LoadImagesFromSDCard();
+			load = new LoadImagesFromSource();
 			load.execute();
 		} else {
 			final LoadedImage[] photos = (LoadedImage[]) data;
 			if (photos.length == 0) {
-				load = new LoadImagesFromSDCard();
+				load = new LoadImagesFromSource();
 				load.execute();
 			}
 			for (LoadedImage photo : photos) {
@@ -144,18 +186,18 @@ public class GalleryActivity extends Activity implements OnItemClickListener {
 	 * Save bitmap images into a list and return that list.
 	 * 
 	 * @return
-	 * @see android.app.Activity#onRetainNonConfigurationInstance()
+	 * @see Activity#onRetainNonConfigurationInstance()
 	 */
 	@Override
 	public Object onRetainNonConfigurationInstance() {
 		final GridView grid = sdcardImages;
 		final int count = grid.getChildCount();
-		final LoadedImage[] list = new LoadedImage[count];
+        final LoadedImage[] list = new LoadedImage[count];
 
-		for (int i = 0; i < count; i++) {
-			final ImageView v = (ImageView) grid.getChildAt(i);
-			list[i] = new LoadedImage(((BitmapDrawable) v.getDrawable()).getBitmap());
-		}
+        for (int i = 0; i < count; i++) {
+            final ImageView v = (ImageView) grid.getChildAt(i);
+            list[i] = new LoadedImage(((BitmapDrawable) v.getDrawable()).getBitmap());
+        }
 
 		return list;
 	}
@@ -163,61 +205,72 @@ public class GalleryActivity extends Activity implements OnItemClickListener {
 	/**
 	 * Async task for loading the images from the SD card. *
 	 */
-	class LoadImagesFromSDCard extends AsyncTask<Object, LoadedImage, Integer> {
+	class LoadImagesFromSource extends AsyncTask<Object, LoadedImage, Integer> {
 
 		/**
 		 * Load images from SD Card in the background, and display each image on
 		 * the screen.
-		 * 
-		 * @see android.os.AsyncTask#doInBackground(Params[])
 		 */
 		@Override
 		protected Integer doInBackground(Object... params) {
 			Bitmap bitmap = null;
 			Bitmap newBitmap = null;
-			sequencialImageID = new HashMap<Integer, Integer>();
+			sequencialImageID = new LinkedHashMap<>();
 
+			if(img_source == null)
+				img_source = imageSource.get(EXTERNAL);
 			// Set up an array of the Thumbnail Image ID column we want
-			String[] projection = { MediaStore.Images.Media._ID };
+			String[] projection = { MediaStore.Images.Media._ID, MediaStore.Images.Media.DATA};
 			// Create the cursor pointing to the SDCard
-			Cursor cursor = managedQuery(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, projection, null, null, MediaStore.Images.Media.DATE_TAKEN + " DESC");
+			Cursor cursor = getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                                projection,
+                                null,
+                                null,
+                                MediaStore.Images.Media.DATE_TAKEN + " DESC");
 			int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
+            int pathIndex   = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
 			int size = cursor.getCount();
 			// If size is 0, there are no images on the SD Card.
 			if (size == 0) {
 				return -1;
 			}
 			int imageID = 0;
+            String imagePath = null;
 			for (int i = 0; i < size; i++) {
-				if (isCancelled() || cursor.isClosed()) {
-					break;
-				}
-				cursor.moveToPosition(i);
-				imageID = cursor.getInt(columnIndex);
-				sequencialImageID.put(Integer.valueOf(i), imageID);
+                if (isCancelled() || cursor.isClosed()) {
+                    break;
+                }
+                cursor.moveToPosition(i);
+                imageID = cursor.getInt(columnIndex);
+                imagePath = cursor.getString(pathIndex);
+                if (imagePath != null && imagePath.startsWith(img_source)) {
+                    sequencialImageID.put(imageID, imagePath);
 
-				bitmap = MediaStore.Images.Thumbnails.getThumbnail(getContentResolver(), imageID, MediaStore.Images.Thumbnails.MICRO_KIND, null);
-				if (bitmap != null) {
-					try {
-						newBitmap = Bitmap.createScaledBitmap(bitmap, 170, 170, true);
-						bitmap.recycle();
-						bitmap = null;
-						System.gc();
-						Runtime.getRuntime().gc();
-						if (newBitmap != null) {
-							publishProgress(new LoadedImage(newBitmap));
-						}
-					} catch (OutOfMemoryError e) {
-						bitmap.recycle();
-						bitmap = null;
-						System.gc();
-						Runtime.getRuntime().gc();
+                    bitmap = MediaStore.Images.Thumbnails.getThumbnail(getContentResolver(), imageID, MediaStore.Images.Thumbnails.MINI_KIND, null);
+                    if (bitmap != null) {
+                        try {
+                            newBitmap = Bitmap.createScaledBitmap(bitmap, 170, 170, true);
+                            bitmap.recycle();
+                            bitmap = null;
+                            System.gc();
+                            Runtime.getRuntime().gc();
+                            if (newBitmap != null) {
+                                publishProgress(new LoadedImage(newBitmap));
+                            }
+                        } catch (OutOfMemoryError e) {
+                            bitmap.recycle();
+                            bitmap = null;
+                            System.gc();
+                            Runtime.getRuntime().gc();
 
-						i++;
-					}
-				}
+                            i++;
+                        }
+                    }
+                }
 			}
 			cursor.close();
+            if(sequencialImageID.isEmpty())
+                return -1;
 			return null;
 		}
 
@@ -235,7 +288,7 @@ public class GalleryActivity extends Activity implements OnItemClickListener {
 		/**
 		 * Set the visibility of the progress bar to false.
 		 * 
-		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
+		 * @see AsyncTask#onPostExecute(Object)
 		 */
 		@Override
 		protected void onPostExecute(Integer result) {
@@ -243,13 +296,13 @@ public class GalleryActivity extends Activity implements OnItemClickListener {
 				AlertDialog.Builder dialog = new AlertDialog.Builder(sdcardImages.getContext());
 				dialog.setTitle("Alert");
 				dialog.setMessage("No images were found!");
-				dialog.setNeutralButton("OK", new OnClickListener() {
-
-					public void onClick(DialogInterface dialog, int which) {
-						setResult(RESULT_CANCELED);
-						finish();
-					}
-				});
+//				dialog.setNeutralButton("OK", new OnClickListener() {
+//
+//					public void onClick(DialogInterface dialog, int which) {
+//						setResult(RESULT_CANCELED);
+//						finish();
+//					}
+//				});
 				dialog.show();
 			}
 
@@ -263,7 +316,7 @@ public class GalleryActivity extends Activity implements OnItemClickListener {
 	class ImageAdapter extends BaseAdapter {
 
 		private Context mContext;
-		private ArrayList<LoadedImage> photos = new ArrayList<LoadedImage>();
+		private ArrayList<LoadedImage> photos = new ArrayList<>();
 
 		public ImageAdapter(Context context) {
 			mContext = context;
@@ -297,6 +350,10 @@ public class GalleryActivity extends Activity implements OnItemClickListener {
 			imageView.setImageBitmap(photos.get(position).getBitmap());
 			return imageView;
 		}
+
+        public void clean(){
+            photos.clear();
+        }
 	}
 
 	/**
@@ -324,12 +381,19 @@ public class GalleryActivity extends Activity implements OnItemClickListener {
 	 */
 	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 
-		Integer imageID = sequencialImageID.get(position);
+		//Integer imageID = sequencialImageID.get(position);
+        //Uri uri = Uri.parse(MediaStore.Images.Media.EXTERNAL_CONTENT_URI + "/"
+        //        + imageID);
 
-		Uri uri = Uri.parse(MediaStore.Images.Media.EXTERNAL_CONTENT_URI + "/" + imageID);
+        Integer imageID = (new ArrayList<>(sequencialImageID.keySet())).get(position);
+        String  imgPath = (new ArrayList<>(sequencialImageID.values())).get(position);
+
+        Uri uri = Uri.parse(imgPath);
+
 		getIntent().setData(uri);
 		setResult(RESULT_OK, getIntent());
 		finish();
+
 	}
 
 	public static Bitmap decodeScaledBitmapFromSdCard(String filePath, int reqWidth, int reqHeight) {
