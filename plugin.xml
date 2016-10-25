@@ -72,14 +72,14 @@
 		
 		<config-file target="AndroidManifest.xml" parent="/manifest/application">
             <activity 
-				android:label="cameraactivity" 
+				android:label="Camera" 
 				android:name="org.apache.cordova.camera.CameraActivity" 
 				android:screenOrientation="portrait" 
 				android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
             </activity>
 		
 			<activity 
-				android:label="galleryactivity" 
+				android:label="Gallery" 
 				android:name="org.apache.cordova.camera.GalleryActivity" 
 				android:screenOrientation="portrait">
             </activity>
